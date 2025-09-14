@@ -1,11 +1,17 @@
 import Card from "@mui/material/Card";
-import type { IProduct } from "../model/IProduct";
+import type { IProduct } from "../../model/IProduct";
 import { Button, CardActions, CardContent, CardMedia, Typography } from "@mui/material";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import SearchIcon from "@mui/icons-material/Search";
+import { Link } from "react-router";
 
 interface Props {
   product: IProduct;
 }
+
+const links = [
+  { title: "Details", path: "/catalog/" },
+];
 
 function Product(props: Props) {
   return (
@@ -27,7 +33,7 @@ function Product(props: Props) {
       </CardContent>
       <CardActions>
         <Button size="small" variant="outlined" startIcon={<AddShoppingCartIcon />} disabled={!props.product.isActive || props.product.stock === 0}>Add to Cart</Button>
-        <Button size="small">View</Button>
+        <Button size="small" startIcon={<SearchIcon />} component={Link} to={links[0].path + props.product.id}>View</Button>
       </CardActions>
     </Card>
   );

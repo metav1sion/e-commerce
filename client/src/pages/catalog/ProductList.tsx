@@ -1,8 +1,7 @@
-import {useEffect, useMemo, useState } from "react";
-import type { IProduct } from "../model/IProduct";
+import {useEffect, useState } from "react";
+import type { IProduct } from "../../model/IProduct";
 import Product from "./Product";
 import { Grid } from "@mui/material";
-
 
 interface Props {
   products: IProduct[];
