@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import ProductList from "./ProductList";
 import type { IProduct } from "../../model/IProduct";
+import requests from "../../api/requests";
 
 function CatalogPage() {
 
   const [products, setProducts] = useState<IProduct[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5220/api/products")
-    .then(response => response.json())
-    .then(data => setProducts(data));
+    requests.Catalog.list()
+    .then(data => setProducts(data))
+    .finally(() => setLoading(false));
   }, []);
 
   return (

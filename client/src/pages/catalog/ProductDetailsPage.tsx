@@ -3,6 +3,7 @@ import Grid from "@mui/material/Grid";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import type { IProduct } from "../../model/IProduct";
+import requests from "../../api/requests";
 
 function ProductDetailsPage() {
     const { id } = useParams<{ id: string }>();
@@ -12,18 +13,10 @@ function ProductDetailsPage() {
 
     useEffect(() => {
         if (productId) {
-            fetch(`http://localhost:5220/api/products/${productId}`)
-            .then(async (response) => {
-                if (response.status === 404) {
-                    return null;
-                }
-                const data = await response.json();
-                setProduct(data);
-            }).catch(error => {
-                console.error("Error fetching product:", error);
-            }).finally(() => {
-                setLoading(false);
-            });
+            requests.Catalog.details(productId)
+            .then(data => setProduct(data))
+            .catch(error => console.log(error))
+            .finally(() => setLoading(false));
         }
         console.log("product", product);
     }, [productId]);
