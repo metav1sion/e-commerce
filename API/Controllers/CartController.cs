@@ -29,17 +29,17 @@ namespace API.Controllers
             return CartToDto(cart);
         }
         [HttpPost("add-item")]
-        public async Task<ActionResult> AddItem(int productId, int quantity)
+        public async Task<ActionResult> AddItem([FromBody] AddItemDto dto)
         {
             var cart = await GetOrCreate();
-            var product = await _context.Products.FirstOrDefaultAsync(x=>x.Id == productId);
+            var product = await _context.Products.FirstOrDefaultAsync(x=>x.Id == dto.ProductId);
 
             if(product == null)
             {
                 return NotFound("There is no product.");
             }
 
-            cart.AddItem(product, quantity);
+            cart.AddItem(product, dto.Quantity);
 
             var result = await _context.SaveChangesAsync() > 0;
 
@@ -83,17 +83,17 @@ namespace API.Controllers
 
             if(cart == null)
             {
-                var customerId = Guid.NewGuid().ToString();
+            var customerId = Guid.NewGuid().ToString();
 
-                var cookieOptions = new CookieOptions()
-                {
-                    Expires = DateTime.Now.AddMonths(1),
-                    IsEssential = true
-                };
+            var cookieOptions = new CookieOptions()
+            {
+                Expires = DateTime.Now.AddMonths(1),
+                IsEssential = true,
+                SameSite = SameSiteMode.None,
+                Secure = true
+            };
 
-                Response.Cookies.Append("customerId",customerId, cookieOptions);
-
-                var newCart = new Cart
+            Response.Cookies.Append("customerId",customerId, cookieOptions);                var newCart = new Cart
                 {
                     CustomerId = customerId
                 };
@@ -101,7 +101,16 @@ namespace API.Controllers
                 _context.Carts.Add(newCart);
                 await _context.SaveChangesAsync();
 
-                return newCart;
+                var returnNewCart = await _context.Carts.Include(i=>i.Items)
+                                    .ThenInclude(p=>p.Product)
+                                    .FirstOrDefaultAsync(c=>c.Id == newCart.Id);
+                
+                if(returnNewCart == null)
+                {
+                    throw new Exception("Cart could not be created");
+                }
+
+                return returnNewCart;
             }
 
             return cart;

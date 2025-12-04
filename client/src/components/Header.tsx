@@ -1,6 +1,6 @@
-import { AccountCircle, ShoppingCart } from "@mui/icons-material";
+import { AccountCircle, Link as LinkIcon, ShoppingCart } from "@mui/icons-material";
 import { AppBar, Badge, Box, Button, IconButton, Stack, Toolbar, Typography } from "@mui/material";
-import { NavLink } from "react-router";
+import { NavLink, Link } from "react-router";
 
 const links = [
   { title: "Home", path: "/" },
@@ -31,7 +31,15 @@ function Header() {
             </Stack>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
+          <IconButton 
+            component={Link} 
+            to="/mycart" 
+            size="large" 
+            edge="start" 
+            color="inherit" 
+            aria-label="shopping cart" 
+            sx={{ mr: 2 }}
+          >
             <Badge badgeContent={4} color="secondary">
               <ShoppingCart/>
             </Badge>

@@ -8,6 +8,7 @@ import ProductDetailsPage from "../pages/catalog/ProductDetailsPage";
 import ServerError from "../errors/ServerError";
 import ErrorPage from "../pages/ErrorPage";
 import NotFound from "../errors/NotFound";
+import ShoppingCartPage from "../pages/cart/ShoppingCartPage";
 
 const router = createBrowserRouter([
     {
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
             {path:"/server-error", element:<ServerError />},
             {path: "/not-found", element: <NotFound />},
             {path: "/error", element: <ErrorPage /> },
+            {path: "/mycart", element: <ShoppingCartPage/>},
             {path: "*", element:  <Navigate to="/not-found" />}
         ]
     },
