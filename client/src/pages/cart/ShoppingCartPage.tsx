@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import requests from "../../api/requests";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -10,42 +9,16 @@ import Paper from '@mui/material/Paper';
 import { CircularProgress, Box, Typography, IconButton, Button, Container } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { Add, Remove, Delete } from '@mui/icons-material';
-import type { Cart } from "../../model/ICart";
+import { useCartContext } from "../../context/CartContext";
 
 function ShoppingCartPage(){
-    const [loading,setLoading] = useState(false);
-    const [carts,setCarts] = useState<Cart | null>(null);
-    
-    useEffect(()=>{
-        setLoading(true);
-        requests.Cart.getCart()
-            .then(cart => {
-                console.log(cart);
-                setCarts(cart);
-            })
-            .catch(error => console.log(error))
-            .finally(() => setLoading(false))
-    },[]);
 
-    const addItem = (productId : number) =>{
-        setLoading(true);
-        requests.Cart.addItem(productId, 1)
-            .then(cart => {
-                setCarts(cart);
-            })
-            .catch(error => console.log(error))
-            .finally(() => setLoading(false))
-    }
+    const { cart, deleteItem, setCart } = useCartContext();
 
-    const deleteItem = (productId : number, quantity: number) =>{
-        setLoading(true);
-        requests.Cart.deleteItem(productId, quantity)
-            .then(() =>{return requests.Cart.getCart()})
-            .then(cart => {
-                setCarts(cart);
-            })
-            .catch(error => console.log(error))
-            .finally(() => setLoading(false))
+    const handleAddItem = (productId : number, quantity: number) => {
+        requests.Cart.addItem(productId,quantity)
+                    .then(cart =>setCart(cart))
+                    .catch((error) => console.log(error));
     }
 
 
@@ -55,18 +28,11 @@ function ShoppingCartPage(){
     }
 
     // Toplam hesaplama
-    const subtotal = carts?.items?.reduce((sum: number, item: any) => 
+    const subtotal = cart?.items?.reduce((sum: number, item: any) => 
         sum + (item.price * item.quantity), 0) || 0;
 
-    if (loading) {
-        return (
-            <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-                <CircularProgress size={60} />
-            </Box>
-        );
-    }
 
-    if (!carts || !carts.items || carts.items.length === 0) {
+    if (!cart || !cart.items || cart.items.length === 0) {
         return (
             <Container>
                 <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" minHeight="60vh" gap={3}>
@@ -102,7 +68,7 @@ function ShoppingCartPage(){
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {carts.items.map((item: any) => (
+                                {cart.items.map((item: any) => (
                                     <TableRow 
                                         key={item.productId}
                                         sx={{ '&:hover': { backgroundColor: 'action.hover' } }}
@@ -159,7 +125,7 @@ function ShoppingCartPage(){
                                                         border: '1px solid',
                                                         borderColor: 'primary.main'
                                                     }}
-                                                    onClick={() => addItem(item.productId)}
+                                                    onClick={() => handleAddItem(item.productId, 1)}
                                                 >
                                                     <Add fontSize="small" />
                                                 </IconButton>

@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 import router from "../router/Routes";
 
 axios.defaults.baseURL = "http://localhost:5220/api/";
-axios.defaults.withCredentials = true;
+axios.defaults.withCredentials = true; 
 
 axios.interceptors.response.use(response =>{
     return response;

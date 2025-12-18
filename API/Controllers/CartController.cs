@@ -93,7 +93,8 @@ namespace API.Controllers
                 Secure = true
             };
 
-            Response.Cookies.Append("customerId",customerId, cookieOptions);                var newCart = new Cart
+            Response.Cookies.Append("customerId",customerId, cookieOptions);                
+                var newCart = new Cart
                 {
                     CustomerId = customerId
                 };

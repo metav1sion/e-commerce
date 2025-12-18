@@ -8,22 +8,29 @@ import {
     CardContent, 
     Chip,
     Stack,
-    Paper
+    Paper,
+    IconButton,
+    ButtonGroup
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useEffect, useState } from "react";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 import { useParams } from "react-router";
 import type { IProduct } from "../../model/IProduct";
 import requests from "../../api/requests";
+import { useCartContext } from "../../context/CartContext";
+import { toast } from "react-toastify";
 
 function ProductDetailsPage() {
     const { id } = useParams<{ id: string }>();
     const productId = id ? Number(id) : null;
     const [product, setProduct] = useState<IProduct | null>();
     const [loading, setLoading] = useState<boolean>(true);
+    const {cart, setCart, deleteItem} = useCartContext();
 
     useEffect(() => {
         if (productId) {
@@ -65,11 +72,23 @@ function ProductDetailsPage() {
 
     const handleAddItem = (productId : number, quantity: number) => {
         setLoading(true);
-        requests.Cart.addItem(productId,quantity)
-                    .then(cart =>console.log(cart))
-                    .catch((error) => console.log(error))
-                    .finally(()=>setLoading(false));
+        requests.Cart.addItem(productId, quantity)
+            .then(cart => {
+                setCart(cart);
+                toast.success("Product added to cart");
+            })  // buradaki 'cart', API'dan dönen güncel sepet verisi
+            .catch((error) => console.log(error))
+            .finally(() => setLoading(false));
     }
+
+    const handleRemoveItem = (productId : number, quantity: number) => {
+        setLoading(true);
+        deleteItem(productId, quantity);
+        setLoading(false);
+    }
+
+    const cartItem = cart?.items?.find(item => item.productId === product?.id);
+    const quantityInCart = cartItem?.quantity || 0;
 
     return (
         <Box sx={{ maxWidth: 1400, mx: 'auto', p: { xs: 2, md: 4 } }}>
@@ -215,24 +234,83 @@ function ProductDetailsPage() {
                             </CardContent>
                         </Card>
 
-                        {/* Sepete Ekle Butonu */}
-                        <Button 
-                            variant="contained" 
-                            size="large"
-                            fullWidth
-                            startIcon={<AddShoppingCartIcon />} 
-                            disabled={!product.isActive || product.stock === 0 || loading}
-                            onClick={() => handleAddItem(product.id, 1)}
-                            sx={{ 
-                                py: 1.5,
-                                fontSize: '1.1rem',
-                                fontWeight: 'bold',
-                                borderRadius: 2,
-                                textTransform: 'none'
-                            }}
-                        >
-                            {loading ? 'Ekleniyor...' : 'Sepete Ekle'}
-                        </Button>
+                        {/* Sepete Ekle / Adet Değiştirme */}
+                        {quantityInCart === 0 ? (
+                            <Button 
+                                variant="contained" 
+                                size="large"
+                                fullWidth
+                                startIcon={<AddShoppingCartIcon />} 
+                                disabled={!product.isActive || product.stock === 0 || loading}
+                                onClick={() => handleAddItem(product.id, 1)}
+                                sx={{ 
+                                    py: 1.5,
+                                    fontSize: '1.1rem',
+                                    fontWeight: 'bold',
+                                    borderRadius: 2,
+                                    textTransform: 'none'
+                                }}
+                            >
+                                {loading ? 'Ekleniyor...' : 'Sepete Ekle'}
+                            </Button>
+                        ) : (
+                            <Box>
+                                <Typography 
+                                    variant="body2" 
+                                    color="text.secondary" 
+                                    align="center"
+                                    sx={{ mb: 1 }}
+                                >
+                                    Sepetteki Miktar
+                                </Typography>
+                                <ButtonGroup 
+                                    variant="contained" 
+                                    size="large"
+                                    fullWidth
+                                    sx={{ 
+                                        borderRadius: 2,
+                                        overflow: 'hidden'
+                                    }}
+                                >
+                                    <Button
+                                        onClick={() => handleRemoveItem(product.id, 1)}
+                                        disabled={loading}
+                                        sx={{ 
+                                            py: 1.5,
+                                            fontSize: '1.1rem',
+                                            fontWeight: 'bold'
+                                        }}
+                                    >
+                                        <RemoveIcon />
+                                    </Button>
+                                    <Button
+                                        disabled
+                                        sx={{ 
+                                            py: 1.5,
+                                            fontSize: '1.1rem',
+                                            fontWeight: 'bold',
+                                            color: 'white !important',
+                                            backgroundColor: 'primary.main !important',
+                                            cursor: 'default !important',
+                                            flexGrow: 1
+                                        }}
+                                    >
+                                        {quantityInCart}
+                                    </Button>
+                                    <Button
+                                        onClick={() => handleAddItem(product.id, 1)}
+                                        disabled={loading || quantityInCart >= product.stock}
+                                        sx={{ 
+                                            py: 1.5,
+                                            fontSize: '1.1rem',
+                                            fontWeight: 'bold'
+                                        }}
+                                    >
+                                        <AddIcon />
+                                    </Button>
+                                </ButtonGroup>
+                            </Box>
+                        )}
                     </Stack>
                 </Grid>
             </Grid>
