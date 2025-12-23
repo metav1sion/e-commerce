@@ -34,12 +34,12 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-app.UseAuthorization();
-
 app.UseCors(opt =>
 {
     opt.AllowAnyMethod().AllowAnyHeader().AllowCredentials().WithOrigins("http://localhost:3000");
 });
+
+app.UseAuthorization();
 
 app.MapControllers();
 
