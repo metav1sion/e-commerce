@@ -1,7 +1,7 @@
 import { AccountCircle, Link as LinkIcon, ShoppingCart } from "@mui/icons-material";
 import { AppBar, Badge, Box, Button, IconButton, Stack, Toolbar, Typography } from "@mui/material";
 import { NavLink, Link } from "react-router";
-import { useCartContext } from "../context/CartContext";
+import { useAppSelector } from "../hooks/hooks";
 
 const links = [
   { title: "Home", path: "/" },
@@ -18,7 +18,7 @@ const navStyles = {
 };
 
 function Header() {
-  const { cart } = useCartContext();
+  const { cart } = useAppSelector((state) => state.cart);
   const itemCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
   
   return (

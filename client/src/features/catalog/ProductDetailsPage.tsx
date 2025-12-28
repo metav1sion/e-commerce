@@ -24,13 +24,17 @@ import type { IProduct } from "../../model/IProduct";
 import requests from "../../api/requests";
 import { useCartContext } from "../../context/CartContext";
 import { toast } from "react-toastify";
+import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
+import { setCart } from "../cart/cartSlice";
+import type { Cart } from "../../model/ICart";
 
 function ProductDetailsPage() {
     const { id } = useParams<{ id: string }>();
     const productId = id ? Number(id) : null;
     const [product, setProduct] = useState<IProduct | null>();
     const [loading, setLoading] = useState<boolean>(true);
-    const {cart, setCart, deleteItem} = useCartContext();
+    const { cart } = useAppSelector((state) => state.cart);
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         if (productId) {
@@ -74,7 +78,7 @@ function ProductDetailsPage() {
         setLoading(true);
         requests.Cart.addItem(productId, quantity)
             .then(cart => {
-                setCart(cart);
+                dispatch(setCart(cart));
                 toast.success("Product added to cart");
             })  // buradaki 'cart', API'dan dönen güncel sepet verisi
             .catch((error) => console.log(error))
@@ -83,8 +87,16 @@ function ProductDetailsPage() {
 
     const handleRemoveItem = (productId : number, quantity: number) => {
         setLoading(true);
-        deleteItem(productId, quantity);
-        setLoading(false);
+        requests.Cart.deleteItem(productId, quantity)
+            .then(() => requests.Cart.getCart())
+            .then(
+                (cartResponse: Cart) => {dispatch(setCart(cartResponse));
+                    toast.info("Product removed from cart");
+                }
+                
+            )
+            .catch((error) => console.error("The product could not be deleted", error))
+            .finally(() => setLoading(false));
     }
 
     const cartItem = cart?.items?.find(item => item.productId === product?.id);

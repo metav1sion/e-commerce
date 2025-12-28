@@ -10,16 +10,27 @@ import { CircularProgress, Box, Typography, IconButton, Button, Container } from
 import Grid from '@mui/material/Grid';
 import { Add, Remove, Delete } from '@mui/icons-material';
 import { useCartContext } from "../../context/CartContext";
+import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
+import { setCart } from "./cartSlice";
+import type { Cart } from "../../model/ICart";
 
 function ShoppingCartPage(){
 
-    const { cart, deleteItem, setCart } = useCartContext();
+    const { cart } = useAppSelector((state) => state.cart);
+    const dispatchCart = useAppDispatch();
 
     const handleAddItem = (productId : number, quantity: number) => {
         requests.Cart.addItem(productId,quantity)
-                    .then(cart =>setCart(cart))
+                    .then(cart =>dispatchCart(setCart(cart)))
                     .catch((error) => console.log(error));
     }
+
+    const handleDeleteItem = (productId : number, quantity : number) => {
+        requests.Cart.deleteItem(productId, quantity)
+            .then(() => requests.Cart.getCart())
+            .then((cartResponse: Cart) => dispatchCart(setCart(cartResponse)))
+            .catch((error) => console.error("The product could not be deleted", error));
+    };
 
 
     // Fiyat formatlama
@@ -107,7 +118,7 @@ function ShoppingCartPage(){
                                                         border: '1px solid',
                                                         borderColor: 'primary.main'
                                                     }}
-                                                    onClick={() => deleteItem(item.productId, 1)}
+                                                    onClick={() => handleDeleteItem(item.productId, 1)}
                                                 >
                                                     <Remove fontSize="small" />
                                                 </IconButton>
@@ -145,7 +156,7 @@ function ShoppingCartPage(){
                                                         color: 'white'
                                                     }
                                                 }}
-                                                onClick={() => deleteItem(item.productId, item.quantity)}
+                                                onClick={() => handleDeleteItem(item.productId, item.quantity)}
                                             >
                                                 <Delete />
                                             </IconButton>

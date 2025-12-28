@@ -8,6 +8,8 @@ import requests from "../../api/requests";
 import { useState } from "react";
 import { useCartContext } from "../../context/CartContext";
 import { toast } from "react-toastify";
+import { useAppDispatch } from "../../hooks/hooks";
+import { setCart } from "../cart/cartSlice";
 
 interface Props {
   product: IProduct;
@@ -20,13 +22,13 @@ const links = [
 function Product(props: Props) {
 
   const [loading, setLoading] = useState(false);
-  const {setCart} = useCartContext();
-
+  //const {setCart} = useCartContext();
+  const  dispatch = useAppDispatch();
   const handleAddItem = (productId : number, quantity: number) => {
     setLoading(true);
     requests.Cart.addItem(productId,quantity)
                   .then(cart =>{
-                    setCart(cart);
+                    dispatch(setCart(cart));
                     toast.success("Product added to cart");
                   })
                   .catch((error) => console.log(error))
