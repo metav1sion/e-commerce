@@ -4,6 +4,7 @@ using API.Data;
 using API.Entities;
 using Microsoft.EntityFrameworkCore;
 using API.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
