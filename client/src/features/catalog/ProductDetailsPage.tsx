@@ -13,39 +13,36 @@ import {
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import Grid from "@mui/material/Grid";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { useParams } from "react-router";
-import type { IProduct } from "../../model/IProduct";
-import requests from "../../api/requests";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import {addItemToCart, deleteItemFromCart} from "../cart/cartSlice";
+import {fetchproductById, selectProductById} from "./catalogSlice.ts";
 
 function ProductDetailsPage() {
 
     const { id } = useParams<{ id: string }>();
     const productId = id ? Number(id) : null;
-    const [product, setProduct] = useState<IProduct | null>();
-    const [loading, setLoading] = useState<boolean>(true);
+    // const [product, setProduct] = useState<IProduct | null>();
+    // const [loading, setLoading] = useState<boolean>(true);
     const { cart, status } = useAppSelector((state) => state.cart);
-    const dispatch = useAppDispatch();
+    const dispatch = useAppDispatch()
+    const product = useAppSelector( state => selectProductById(state, productId!));
+    const {status: loading} = useAppSelector((state) => state.catalog);
 
     useEffect(() => {
         if (productId) {
-            requests.Catalog.details(productId)
-            .then(data => setProduct(data))
-            .catch(error => console.log(error))
-            .finally(() => setLoading(false));
+            dispatch(fetchproductById(productId))
         }
-        console.log("product", product);
-    }, [productId]);
+    }, [productId, dispatch, product]);
 
-    if (loading) {
+    if (loading === "pendingFetchProductById") {
         return (
             <Box 
                 display="flex" 
