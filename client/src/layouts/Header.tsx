@@ -1,4 +1,4 @@
-import { AccountCircle, Link as LinkIcon, ShoppingCart } from "@mui/icons-material";
+import { AccountCircle, ShoppingCart } from "@mui/icons-material";
 import { AppBar, Badge, Box, Button, IconButton, Stack, Toolbar, Typography } from "@mui/material";
 import { NavLink, Link } from "react-router";
 import { useAppSelector } from "../hooks/hooks";

@@ -1,18 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import ProductList from "./ProductList";
-import type { IProduct } from "../../model/IProduct";
-import requests from "../../api/requests";
-
+import {useAppDispatch, useAppSelector} from "../../hooks/hooks.ts";
+import {fetchproducts, selectAllProducts} from "./catalogSlice.ts";
+import {CircularProgress} from "@mui/material";
 function CatalogPage() {
 
-  const [products, setProducts] = useState<IProduct[]>([]);
-  const [loading, setLoading] = useState(true);
+    const products = useAppSelector(selectAllProducts);
+    const { isFetched, status } = useAppSelector((state) => state.catalog);
+    const dispatch = useAppDispatch();
 
   useEffect(() => {
-    requests.Catalog.list()
-    .then(data => setProducts(data))
-    .finally(() => setLoading(false));
-  }, []);
+    if (!isFetched){
+        dispatch(fetchproducts());
+    }
+  }, [isFetched, dispatch]);
+
+  if(status === "pendingFetchProducts") return <CircularProgress />;
 
   return (
     <div>

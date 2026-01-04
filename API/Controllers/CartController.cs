@@ -69,7 +69,7 @@ namespace API.Controllers
 
             if (result)
             {
-                return NoContent();
+                return Ok(CartToDto(cart));
             }
             return BadRequest(new ProblemDetails{Title = "the product can not be deleted"});
         }

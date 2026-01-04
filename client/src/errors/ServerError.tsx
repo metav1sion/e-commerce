@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, Container, Typography } from '@mui/material';
 import { useLocation } from 'react-router';
 

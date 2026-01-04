@@ -9,9 +9,9 @@ import {
     Chip,
     Stack,
     Paper,
-    IconButton,
     ButtonGroup
 } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
 import Grid from "@mui/material/Grid";
 import { useEffect, useState } from "react";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
@@ -22,18 +22,17 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import { useParams } from "react-router";
 import type { IProduct } from "../../model/IProduct";
 import requests from "../../api/requests";
-import { useCartContext } from "../../context/CartContext";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
-import { setCart } from "../cart/cartSlice";
-import type { Cart } from "../../model/ICart";
+import {addItemToCart, deleteItemFromCart} from "../cart/cartSlice";
 
 function ProductDetailsPage() {
+
     const { id } = useParams<{ id: string }>();
     const productId = id ? Number(id) : null;
     const [product, setProduct] = useState<IProduct | null>();
     const [loading, setLoading] = useState<boolean>(true);
-    const { cart } = useAppSelector((state) => state.cart);
+    const { cart, status } = useAppSelector((state) => state.cart);
     const dispatch = useAppDispatch();
 
     useEffect(() => {
@@ -75,28 +74,17 @@ function ProductDetailsPage() {
     }
 
     const handleAddItem = (productId : number, quantity: number) => {
-        setLoading(true);
-        requests.Cart.addItem(productId, quantity)
-            .then(cart => {
-                dispatch(setCart(cart));
+        dispatch(addItemToCart({productId, quantity}))
+            .then(() => {
                 toast.success("Product added to cart");
-            })  // buradaki 'cart', API'dan dönen güncel sepet verisi
-            .catch((error) => console.log(error))
-            .finally(() => setLoading(false));
+            })
+            .catch((error) => console.error("The product could not be added", error));
     }
 
     const handleRemoveItem = (productId : number, quantity: number) => {
-        setLoading(true);
-        requests.Cart.deleteItem(productId, quantity)
-            .then(() => requests.Cart.getCart())
-            .then(
-                (cartResponse: Cart) => {dispatch(setCart(cartResponse));
-                    toast.info("Product removed from cart");
-                }
-                
-            )
-            .catch((error) => console.error("The product could not be deleted", error))
-            .finally(() => setLoading(false));
+        dispatch(deleteItemFromCart({productId, quantity})).then(()=> {
+            toast.info("Product removed from cart");
+        }).catch((error) => console.error("The product could not be removed", error));
     }
 
     const cartItem = cart?.items?.find(item => item.productId === product?.id);
@@ -248,14 +236,15 @@ function ProductDetailsPage() {
 
                         {/* Sepete Ekle / Adet Değiştirme */}
                         {quantityInCart === 0 ? (
-                            <Button 
-                                variant="contained" 
+                            <LoadingButton
+                                variant="contained"
                                 size="large"
                                 fullWidth
                                 startIcon={<AddShoppingCartIcon />} 
-                                disabled={!product.isActive || product.stock === 0 || loading}
+                                disabled={!product.isActive || product.stock === 0}
                                 onClick={() => handleAddItem(product.id, 1)}
-                                sx={{ 
+                                loading={status === "pendingAddItem" + product.id}
+                                sx={{
                                     py: 1.5,
                                     fontSize: '1.1rem',
                                     fontWeight: 'bold',
@@ -263,8 +252,8 @@ function ProductDetailsPage() {
                                     textTransform: 'none'
                                 }}
                             >
-                                {loading ? 'Ekleniyor...' : 'Sepete Ekle'}
-                            </Button>
+                                Sepete Ekle
+                            </LoadingButton>
                         ) : (
                             <Box>
                                 <Typography 
@@ -284,17 +273,17 @@ function ProductDetailsPage() {
                                         overflow: 'hidden'
                                     }}
                                 >
-                                    <Button
+                                    <LoadingButton
                                         onClick={() => handleRemoveItem(product.id, 1)}
-                                        disabled={loading}
-                                        sx={{ 
+                                        loading={status === "pendingDeleteItem" + product.id}
+                                        sx={{
                                             py: 1.5,
                                             fontSize: '1.1rem',
                                             fontWeight: 'bold'
                                         }}
                                     >
                                         <RemoveIcon />
-                                    </Button>
+                                    </LoadingButton>
                                     <Button
                                         disabled
                                         sx={{ 
@@ -309,17 +298,18 @@ function ProductDetailsPage() {
                                     >
                                         {quantityInCart}
                                     </Button>
-                                    <Button
+                                    <LoadingButton
                                         onClick={() => handleAddItem(product.id, 1)}
-                                        disabled={loading || quantityInCart >= product.stock}
-                                        sx={{ 
+                                        disabled={quantityInCart >= product.stock}
+                                        loading={status === "pendingAddItem" + product.id}
+                                        sx={{
                                             py: 1.5,
                                             fontSize: '1.1rem',
                                             fontWeight: 'bold'
                                         }}
                                     >
                                         <AddIcon />
-                                    </Button>
+                                    </LoadingButton>
                                 </ButtonGroup>
                             </Box>
                         )}

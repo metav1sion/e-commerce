@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router";
-import App from "../components/App";
+import App from "../layouts/App";
 import HomePage from "../features/HomePage";
 import AboutPage from "../features/AboutPage";
 import ContactPage from "../features/ContactPage";
@@ -9,7 +9,7 @@ import ServerError from "../errors/ServerError";
 import ErrorPage from "../features/ErrorPage";
 import NotFound from "../errors/NotFound";
 import ShoppingCartPage from "../features/cart/ShoppingCartPage";
-import Counter from "../features/counter/Counter";
+import Counter from "../features/counter/counter.tsx";
 
 const router = createBrowserRouter([
     {

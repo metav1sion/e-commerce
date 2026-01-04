@@ -40,17 +40,12 @@ export const cartSlice = createSlice({
     reducers: {
         setCart : (state, action) =>{
             state.cart = action.payload;
-        },
-        deleteCartItem(state, action) {
-            if (state.cart) {
-                state.cart.items = state.cart.items.filter(item => item.productId !== action.payload);
-            }
         }
     },
     extraReducers: (builder) => {
         builder
-            .addCase(addItemToCart.pending, (state) => {
-                state.status = 'loading';
+            .addCase(addItemToCart.pending, (state,action) => {
+                state.status = 'pendingAddItem' + action.meta.arg.productId;
             })
             .addCase(addItemToCart.fulfilled, (state, action) => {
                 state.cart = action.payload;
@@ -59,8 +54,8 @@ export const cartSlice = createSlice({
             .addCase(addItemToCart.rejected, (state) => {
                 state.status = 'failed';
             })
-            .addCase(deleteItemFromCart.pending, (state) => {
-                state.status = 'loading';
+            .addCase(deleteItemFromCart.pending, (state, action) => {
+                state.status = 'pendingDeleteItem' + action.meta.arg.productId;
             })
             .addCase(deleteItemFromCart.fulfilled, (state, action) => {
                 state.cart = action.payload;
@@ -72,4 +67,4 @@ export const cartSlice = createSlice({
     }
 });
 
-export const { setCart, deleteCartItem } = cartSlice.actions;
+export const { setCart } = cartSlice.actions;

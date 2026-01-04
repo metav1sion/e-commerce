@@ -1,15 +1,12 @@
 import Card from "@mui/material/Card";
 import type { IProduct } from "../../model/IProduct";
 import { Button, CardActions, CardContent, CardMedia, Typography } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import SearchIcon from "@mui/icons-material/Search";
 import { Link } from "react-router";
-import requests from "../../api/requests";
-import { useState } from "react";
-import { useCartContext } from "../../context/CartContext";
-import { toast } from "react-toastify";
-import { useAppDispatch } from "../../hooks/hooks";
-import { setCart } from "../cart/cartSlice";
+import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
+import { addItemToCart} from "../cart/cartSlice";
 
 interface Props {
   product: IProduct;
@@ -20,22 +17,10 @@ const links = [
 ];
 
 function Product(props: Props) {
-
-  const [loading, setLoading] = useState(false);
-  //const {setCart} = useCartContext();
+    
+  const { status } = useAppSelector(state => state.cart);
   const  dispatch = useAppDispatch();
-  const handleAddItem = (productId : number, quantity: number) => {
-    setLoading(true);
-    requests.Cart.addItem(productId,quantity)
-                  .then(cart =>{
-                    dispatch(setCart(cart));
-                    toast.success("Product added to cart");
-                  })
-                  .catch((error) => console.log(error))
-                  .finally(()=>setLoading(false));
-
-  }
-
+  
   return (
     <Card>
       <CardMedia 
@@ -64,7 +49,7 @@ function Product(props: Props) {
         </Typography>
       </CardContent>
       <CardActions>
-        <Button size="small" variant="outlined" startIcon={<AddShoppingCartIcon />} disabled={!props.product.isActive || props.product.stock === 0} onClick={()=>handleAddItem(props.product.id,1)} loading = {loading}>Add to Cart</Button>
+        <LoadingButton size="small" variant="outlined" startIcon={<AddShoppingCartIcon />} disabled={!props.product.isActive || props.product.stock === 0} onClick={()=>dispatch(addItemToCart({productId: props.product.id, quantity: 1}))} loading={status === "pendingAddItem" + props.product.id}>Add to Cart</LoadingButton>
         <Button size="small" startIcon={<SearchIcon />} component={Link} to={links[0].path + props.product.id}>View</Button>
       </CardActions>
     </Card>

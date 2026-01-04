@@ -1,4 +1,3 @@
-import requests from "../../api/requests";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -6,32 +5,32 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { CircularProgress, Box, Typography, IconButton, Button, Container } from '@mui/material';
+import { Box, Typography, Button, Container } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
 import Grid from '@mui/material/Grid';
 import { Add, Remove, Delete } from '@mui/icons-material';
-import { useCartContext } from "../../context/CartContext";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
-import { setCart } from "./cartSlice";
-import type { Cart } from "../../model/ICart";
+import {addItemToCart, deleteItemFromCart} from "./cartSlice";
+import {toast} from "react-toastify";
+import type { CartItem } from "../../model/ICart";
 
 function ShoppingCartPage(){
 
-    const { cart } = useAppSelector((state) => state.cart);
+    const { cart, status } = useAppSelector((state) => state.cart);
     const dispatchCart = useAppDispatch();
 
+
     const handleAddItem = (productId : number, quantity: number) => {
-        requests.Cart.addItem(productId,quantity)
-                    .then(cart =>dispatchCart(setCart(cart)))
-                    .catch((error) => console.log(error));
+        dispatchCart(addItemToCart({productId, quantity})).then(() =>{
+            toast.success("Item Added!");
+        }).catch((error) => {console.log(error)});
     }
 
-    const handleDeleteItem = (productId : number, quantity : number) => {
-        requests.Cart.deleteItem(productId, quantity)
-            .then(() => requests.Cart.getCart())
-            .then((cartResponse: Cart) => dispatchCart(setCart(cartResponse)))
-            .catch((error) => console.error("The product could not be deleted", error));
-    };
-
+    const handleDeleteItem = (productId : number, quantity: number) => {
+        dispatchCart(deleteItemFromCart({productId, quantity})).then(()=> {
+            toast.info("Product removed from cart");
+        }).catch((error) => console.error("The product could not be removed", error));
+    }
 
     // Fiyat formatlama
     const ccyFormat = (num: number): string => {
@@ -39,7 +38,7 @@ function ShoppingCartPage(){
     }
 
     // Toplam hesaplama
-    const subtotal = cart?.items?.reduce((sum: number, item: any) => 
+    const subtotal = cart?.items?.reduce((sum: number, item: CartItem) =>
         sum + (item.price * item.quantity), 0) || 0;
 
 
@@ -79,8 +78,8 @@ function ShoppingCartPage(){
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {cart.items.map((item: any) => (
-                                    <TableRow 
+                                {cart.items.map((item: CartItem) => (
+                                    <TableRow
                                         key={item.productId}
                                         sx={{ '&:hover': { backgroundColor: 'action.hover' } }}
                                     >
@@ -111,35 +110,41 @@ function ShoppingCartPage(){
                                         </TableCell>
                                         <TableCell align="center">
                                             <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
-                                                <IconButton 
-                                                    size="small" 
+                                                <LoadingButton
+                                                    size="small"
                                                     color="primary"
                                                     sx={{ 
                                                         border: '1px solid',
-                                                        borderColor: 'primary.main'
+                                                        borderColor: 'primary.main',
+                                                        minWidth: '32px',
+                                                        padding: '4px'
                                                     }}
                                                     onClick={() => handleDeleteItem(item.productId, 1)}
+                                                    loading={status === "pendingDeleteItem" + item.productId}
                                                 >
                                                     <Remove fontSize="small" />
-                                                </IconButton>
-                                                <Typography 
+                                                </LoadingButton>
+                                                <Typography
                                                     variant="body1" 
                                                     fontWeight="bold"
                                                     sx={{ minWidth: 30, textAlign: 'center' }}
                                                 >
                                                     {item.quantity}
                                                 </Typography>
-                                                <IconButton 
-                                                    size="small" 
+                                                <LoadingButton
+                                                    size="small"
                                                     color="primary"
                                                     sx={{ 
                                                         border: '1px solid',
-                                                        borderColor: 'primary.main'
+                                                        borderColor: 'primary.main',
+                                                        minWidth: '32px',
+                                                        padding: '4px'
                                                     }}
                                                     onClick={() => handleAddItem(item.productId, 1)}
+                                                    loading={status === "pendingAddItem" + item.productId}
                                                 >
                                                     <Add fontSize="small" />
-                                                </IconButton>
+                                                </LoadingButton>
                                             </Box>
                                         </TableCell>
                                         <TableCell align="right">
@@ -148,18 +153,21 @@ function ShoppingCartPage(){
                                             </Typography>
                                         </TableCell>
                                         <TableCell align="center">
-                                            <IconButton 
+                                            <LoadingButton
                                                 color="error"
                                                 sx={{ 
                                                     '&:hover': { 
                                                         backgroundColor: 'error.light',
                                                         color: 'white'
-                                                    }
+                                                    },
+                                                    minWidth: '40px',
+                                                    padding: '8px'
                                                 }}
                                                 onClick={() => handleDeleteItem(item.productId, item.quantity)}
+                                                loading={status === "pendingDeleteItem" + item.productId}
                                             >
                                                 <Delete />
-                                            </IconButton>
+                                            </LoadingButton>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -190,11 +198,11 @@ function ShoppingCartPage(){
                                 Ücretsiz
                             </Typography>
                         </Box>
-                        <Box 
-                            display="flex" 
-                            justifyContent="space-between" 
-                            sx={{ 
-                                pt: 2, 
+                        <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            sx={{
+                                pt: 2,
                                 borderTop: '2px solid',
                                 borderColor: 'divider'
                             }}
@@ -206,11 +214,11 @@ function ShoppingCartPage(){
                                 {ccyFormat(subtotal)}
                             </Typography>
                         </Box>
-                        <Button 
-                            variant="contained" 
-                            fullWidth 
+                        <Button
+                            variant="contained"
+                            fullWidth
                             size="large"
-                            sx={{ 
+                            sx={{
                                 mt: 3,
                                 py: 1.5,
                                 fontSize: '1.1rem',
