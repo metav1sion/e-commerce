@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 import router from "../router/Routes";
 
 axios.defaults.baseURL = "http://localhost:5220/api/";
-axios.defaults.withCredentials = true; 
+axios.defaults.withCredentials = true;
 
 axios.interceptors.response.use(response =>{
     return response;
@@ -19,20 +19,20 @@ axios.interceptors.response.use(response =>{
                         modelStateErrors.push(data.errors[key]);
                     }
                 }
-                toast.error(data.title);
+                toast.error(data.title || data.message || 'Bad Request');
                 throw modelStateErrors;
             }
-            toast.error(data.title);
+            toast.error(data.title || data.message || 'Bad Request');
             break;
         case 401:
-            toast.error(data.title);
+            toast.error(data.title || data.message || 'Unauthorized');
             break;
         case 404:
-            toast.error(data.title);
+            toast.error(data.title || data.message || 'Not Found');
             router.navigate('/not-found', {state: {error: data, status: status}});
             break;
         case 500:
-            toast.error(data.title);
+            toast.error(data.title || data.message || 'Server Error');
             router.navigate('/server-error', {state: {error: data, status: status}});
             break;
         default:
@@ -59,9 +59,15 @@ const Cart = {
     deleteItem: (id: number, quantity: number) => queries.delete(`cart?productId=${id}&quantity=${quantity}`)
 }
 
+const Account = {
+    login : (formData: any) => queries.post("account/login",formData),
+    register : (formData: any) => queries.post("account/register",formData),
+}
+
 const requests = {
     Catalog,
-    Cart
+    Cart,
+    Account
 }
 
 export default requests;

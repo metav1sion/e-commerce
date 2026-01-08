@@ -1,4 +1,4 @@
-import { AccountCircle, ShoppingCart } from "@mui/icons-material";
+import { ShoppingCart } from "@mui/icons-material";
 import { AppBar, Badge, Box, Button, IconButton, Stack, Toolbar, Typography } from "@mui/material";
 import { NavLink, Link } from "react-router";
 import { useAppSelector } from "../hooks/hooks";
@@ -8,6 +8,11 @@ const links = [
   { title: "Catalog", path: "/catalog" },
   { title: "About", path: "/about" },
   { title: "Contact", path: "/contact" },
+];
+
+const authLinks = [
+    {title: "Login", path: "/login"},
+    {title: "Register", path: "/register"},
 ];
 
 const navStyles = {
@@ -48,11 +53,18 @@ function Header() {
               <ShoppingCart/>
             </Badge>
           </IconButton>
-          <IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
-            <Badge color="secondary">
-              <AccountCircle/>
-            </Badge>
-          </IconButton>
+          <Stack direction="row">
+            {
+              authLinks.map(
+                  link => <Button component={NavLink} to={link.path} key={link.title} sx={navStyles}>{link.title}</Button>
+              )
+            }
+          </Stack>
+          {/*<IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>*/}
+          {/*  <Badge color="secondary">*/}
+          {/*    <AccountCircle/>*/}
+          {/*  </Badge>*/}
+          {/*</IconButton>*/}
         </Box>
       </Toolbar>
     </AppBar>

@@ -16,7 +16,7 @@ public class SeedDatabase
         {
             var customer = new AppRole { Name = "Customer" };
             var admin = new AppRole { Name = "Admin" };
-            
+
             await roleManager.CreateAsync(customer);
             await roleManager.CreateAsync(admin);
         }
